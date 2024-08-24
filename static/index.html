@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #f5f5f5;
+        }
+        .container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .container h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .container p {
+            margin-top: 5px;
+            font-size: 14px;
+            color: #999;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            background: #1e1e1e;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+        }
+        .messages {
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            border-bottom: 1px solid #333;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .message.bot {
+            text-align: left;
+        }
+        .message.user {
+            text-align: right;
+        }
+        .input-container {
+            display: flex;
+            border-top: 1px solid #333;
+        }
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background-color: #333;
+            color: #f5f5f5;
+            border-radius: 0 0 0 8px;
+        }
+        .input-container button {
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 0 0 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>This is Arya</h1>
+        <p>Wait 15 seconds if error occurs</p>
+    </div>
+
+    <div class="chat-container">
+        <div class="messages" id="messages"></div>
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type a message..." />
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+    // Get user's name from localStorage
+    const userName = localStorage.getItem('userName');
+
+    async function sendMessage() {
+        const userInput = document.getElementById('userInput').value;
+        if (!userInput || !userName) return;
+
+        // Add user message to chat
+        const messages = document.getElementById('messages');
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message user';
+        userMessage.textContent = userInput;
+        messages.appendChild(userMessage);
+        document.getElementById('userInput').value = '';
+
+        // Call the backend API with user's name and message
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: userName, message: userInput }),
+        });
+
+        const data = await response.json();
+        const botMessage = document.createElement('div');
+        botMessage.className = 'message bot';
+        botMessage.textContent = data.reply;
+        messages.appendChild(botMessage);
+
+        // Scroll to the bottom of the chat
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    window.onload = function() {
+        const userName = localStorage.getItem('userName');
+        if (userName) {
+            const messages = document.getElementById('messages');
+            const botMessage = document.createElement('div');
+            botMessage.className = 'message bot';
+            botMessage.textContent = `Hello ${userName}, share me your feelings`;
+            messages.appendChild(botMessage);
+        }
+    }
+    </script>
+
+</body>
+</html>
